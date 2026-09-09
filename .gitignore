@@ -1,2 +1,27 @@
 # superpowers sdd workspaces (per-plan scratch, not project history)
 .superpowers/
+
+# dependencies
+node_modules/
+
+# next.js
+web/.next/
+web/out/
+
+# expo
+mobile/.expo/
+mobile/dist/
+
+# env files (never commit secrets)
+.env
+.env.local
+**/.env
+**/.env.local
+
+# supabase local artifacts
+supabase/.branches
+supabase/.temp
+
+# misc
+.DS_Store
+*.log
