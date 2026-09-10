@@ -1,5 +1,7 @@
 # DJRJC Logistics Foundation Implementation Plan
 
+> **Amended 2026-09-10:** the GitHub repo is public, not private as stated below — required to unblock Vercel Hobby-plan deployment (commit-author-must-be-team-owner restriction on private repos). No secrets are committed; all credentials live in Vercel environment variables. See the foundation plan's execution ledger, Ruling 5, for the full rationale.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Provision the DJRJC Logistics project's foundation — GitHub repo, Supabase backend (schema + RLS), and a deployed Vercel web skeleton — proving the GitHub↔Vercel↔Supabase chain works end-to-end before any feature work starts.

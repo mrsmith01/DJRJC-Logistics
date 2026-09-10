@@ -3,6 +3,8 @@
 Status: approved for planning
 Date: 2026-09-09
 
+> **Amended 2026-09-10:** the GitHub repo is public, not private as stated below — required to unblock Vercel Hobby-plan deployment (commit-author-must-be-team-owner restriction on private repos). No secrets are committed; all credentials live in Vercel environment variables. See the foundation plan's execution ledger, Ruling 5, for the full rationale.
+
 ## Purpose
 
 DJRJC is an owner-operator trucking business running loads primarily through
