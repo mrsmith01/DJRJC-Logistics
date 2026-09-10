@@ -1,10 +1,26 @@
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import { signIn } from './actions'
+
+const errorMessages: Record<string, string> = {
+  invalid: 'Invalid email or password.',
+  invalid_link: 'That link is invalid or has expired.',
+}
 
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string }>
 }) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (user) {
+    redirect('/dashboard')
+  }
+
   const { error } = await searchParams
 
   return (
@@ -27,7 +43,9 @@ export default async function LoginPage({
             style={{ width: '100%' }}
           />
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && (
+          <p style={{ color: 'red' }}>{errorMessages[error] ?? 'Something went wrong.'}</p>
+        )}
         <button type="submit">Sign in</button>
       </form>
     </main>

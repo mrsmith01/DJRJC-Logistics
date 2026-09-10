@@ -23,13 +23,19 @@ async function requireOwner() {
   if (profile?.role !== 'owner') {
     throw new Error('Only the owner can perform this action')
   }
+
+  return { supabase, user }
 }
 
 export async function inviteDriver(formData: FormData) {
   await requireOwner()
 
-  const email = formData.get('email') as string
-  const name = formData.get('name') as string
+  const email = formData.get('email')
+  const name = formData.get('name')
+
+  if (typeof email !== 'string' || !email || typeof name !== 'string' || !name) {
+    throw new Error('Name and email are required')
+  }
 
   const serviceClient = createServiceClient()
   const { error } = await serviceClient.auth.admin.inviteUserByEmail(email, {
@@ -44,20 +50,19 @@ export async function inviteDriver(formData: FormData) {
 }
 
 export async function addTruck(formData: FormData) {
-  await requireOwner()
+  const { supabase, user } = await requireOwner()
 
-  const unitNumber = formData.get('unit_number') as string
-  const plate = formData.get('plate') as string
+  const unitNumber = formData.get('unit_number')
+  const plate = formData.get('plate')
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  if (typeof unitNumber !== 'string' || !unitNumber) {
+    throw new Error('Unit number is required')
+  }
 
   const { error } = await supabase.from('trucks').insert({
     unit_number: unitNumber,
-    plate: plate || null,
-    owner_id: user!.id,
+    plate: typeof plate === 'string' && plate ? plate : null,
+    owner_id: user.id,
   })
 
   if (error) {
