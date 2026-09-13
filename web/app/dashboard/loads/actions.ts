@@ -29,11 +29,17 @@ export async function importLoads(
   }
 
   const text = await file.text()
-  const records: Record<string, string>[] = parse(text, {
-    columns: true,
-    skip_empty_lines: true,
-    trim: true,
-  })
+  let records: Record<string, string>[]
+  try {
+    records = parse(text, {
+      columns: true,
+      skip_empty_lines: true,
+      trim: true,
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown parsing error'
+    return { status: 'error', message: `Failed to parse CSV: ${errorMessage}` }
+  }
 
   if (records.length === 0) {
     return { status: 'error', message: 'The CSV file has no data rows.' }
