@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { inviteDriver, addTruck } from './actions'
+import { Button, Card, Input, Label, PageHeader } from '@/components/ui'
 
 export default async function DriversPage() {
   const supabase = await createClient()
@@ -35,39 +36,65 @@ export default async function DriversPage() {
 
   return (
     <div>
-      <h1>Drivers &amp; Trucks</h1>
+      <PageHeader title="Drivers & Trucks" description="Invite drivers and manage your fleet." />
 
-      <section style={{ marginBottom: '2rem' }}>
-        <h2>Drivers</h2>
-        <ul>
-          {drivers?.map((d) => (
-            <li key={d.id}>
-              {d.name} ({d.email}) — {d.role}
-            </li>
-          ))}
-        </ul>
-        <form action={inviteDriver}>
-          <input name="name" placeholder="Name" required />
-          <input name="email" type="email" placeholder="Email" required />
-          <button type="submit">Invite driver</button>
-        </form>
-      </section>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="p-5">
+          <h2 className="mb-4 font-semibold text-slate-900">Drivers</h2>
+          <ul className="mb-5 divide-y divide-slate-100">
+            {drivers?.map((d) => (
+              <li key={d.id} className="flex items-center justify-between py-2 text-sm">
+                <div>
+                  <p className="font-medium text-slate-900">{d.name}</p>
+                  <p className="text-slate-500">{d.email}</p>
+                </div>
+                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium capitalize text-slate-700">
+                  {d.role}
+                </span>
+              </li>
+            ))}
+            {drivers?.length === 0 && (
+              <li className="py-2 text-sm text-slate-500">No drivers yet.</li>
+            )}
+          </ul>
+          <form action={inviteDriver} className="space-y-3 border-t border-slate-100 pt-4">
+            <div>
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" name="name" placeholder="Jane Smith" required />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" name="email" type="email" placeholder="jane@example.com" required />
+            </div>
+            <Button type="submit">Invite driver</Button>
+          </form>
+        </Card>
 
-      <section>
-        <h2>Trucks</h2>
-        <ul>
-          {trucks?.map((t) => (
-            <li key={t.id}>
-              {t.unit_number} {t.plate ? `(${t.plate})` : ''}
-            </li>
-          ))}
-        </ul>
-        <form action={addTruck}>
-          <input name="unit_number" placeholder="Unit number" required />
-          <input name="plate" placeholder="Plate (optional)" />
-          <button type="submit">Add truck</button>
-        </form>
-      </section>
+        <Card className="p-5">
+          <h2 className="mb-4 font-semibold text-slate-900">Trucks</h2>
+          <ul className="mb-5 divide-y divide-slate-100">
+            {trucks?.map((t) => (
+              <li key={t.id} className="py-2 text-sm text-slate-900">
+                {t.unit_number} {t.plate ? <span className="text-slate-500">({t.plate})</span> : null}
+              </li>
+            ))}
+            {trucks?.length === 0 && (
+              <li className="py-2 text-sm text-slate-500">No trucks yet.</li>
+            )}
+          </ul>
+          <form action={addTruck} className="space-y-3 border-t border-slate-100 pt-4">
+            <div>
+              <Label htmlFor="unit_number">Unit number</Label>
+              <Input id="unit_number" name="unit_number" placeholder="T-101" required />
+            </div>
+            <div>
+              <Label htmlFor="plate">Plate (optional)</Label>
+              <Input id="plate" name="plate" placeholder="ABC-1234" />
+            </div>
+            <Button type="submit">Add truck</Button>
+          </form>
+        </Card>
+      </div>
     </div>
   )
 }

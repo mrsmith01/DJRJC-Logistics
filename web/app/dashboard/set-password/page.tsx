@@ -1,4 +1,5 @@
 import { setPassword } from './actions'
+import { Button, ErrorBanner, Input, Label } from '@/components/ui'
 
 const errorMessages: Record<string, string> = {
   missing_fields: 'Please fill in both fields.',
@@ -15,39 +16,42 @@ export default async function SetPasswordPage({
   const { error } = await searchParams
 
   return (
-    <div style={{ maxWidth: 400 }}>
-      <h1>Set your password</h1>
-      <form action={setPassword}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="password">New password</label>
-          <br />
-          <input
+    <div className="mx-auto max-w-sm">
+      <h1 className="text-xl font-semibold tracking-tight text-slate-900">Set your password</h1>
+      <p className="mt-1 text-sm text-slate-500">
+        Choose a password to finish securing your account.
+      </p>
+
+      <form
+        action={setPassword}
+        className="mt-6 space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+      >
+        <div>
+          <Label htmlFor="password">New password</Label>
+          <Input
             id="password"
             name="password"
             type="password"
             required
             minLength={8}
-            style={{ width: '100%' }}
+            autoComplete="new-password"
           />
         </div>
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="confirm">Confirm password</label>
-          <br />
-          <input
+        <div>
+          <Label htmlFor="confirm">Confirm password</Label>
+          <Input
             id="confirm"
             name="confirm"
             type="password"
             required
             minLength={8}
-            style={{ width: '100%' }}
+            autoComplete="new-password"
           />
         </div>
-        {error && (
-          <p style={{ color: 'red' }}>
-            {errorMessages[error] ?? 'Something went wrong.'}
-          </p>
-        )}
-        <button type="submit">Set password</button>
+        {error && <ErrorBanner>{errorMessages[error] ?? 'Something went wrong.'}</ErrorBanner>}
+        <Button type="submit" className="w-full">
+          Set password
+        </Button>
       </form>
     </div>
   )

@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import { importLoads, type ImportState } from './actions'
+import { Button, Card, ErrorBanner, SuccessBanner } from '@/components/ui'
 
 const initialState: ImportState = { status: 'idle' }
 
@@ -9,27 +10,40 @@ export function LoadsImportForm() {
   const [state, formAction, pending] = useActionState(importLoads, initialState)
 
   return (
-    <section style={{ marginBottom: '2rem' }}>
-      <h2>Import Amazon Relay Trip History</h2>
-      <form action={formAction}>
-        <input type="file" name="file" accept=".csv" required />
-        <button type="submit" disabled={pending}>
+    <Card className="p-5">
+      <h2 className="font-semibold text-slate-900">Import Amazon Relay trip history</h2>
+      <p className="mt-1 text-sm text-slate-500">
+        Upload a Trip History CSV export to create or update loads.
+      </p>
+      <form action={formAction} className="mt-4 flex flex-wrap items-center gap-3">
+        <input
+          type="file"
+          name="file"
+          accept=".csv"
+          required
+          className="block text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-slate-800"
+        />
+        <Button type="submit" disabled={pending}>
           {pending ? 'Importing…' : 'Import CSV'}
-        </button>
+        </Button>
       </form>
 
-      {state.status === 'error' && <p style={{ color: 'red' }}>{state.message}</p>}
+      {state.status === 'error' && (
+        <div className="mt-4">
+          <ErrorBanner>{state.message}</ErrorBanner>
+        </div>
+      )}
 
       {state.status === 'done' && (
-        <div>
-          <p>
-            Created {state.created}, updated {state.updated}, skipped{' '}
-            {state.skippedCancelled} cancelled (no pay).
-          </p>
+        <div className="mt-4 space-y-3">
+          <SuccessBanner>
+            Created {state.created}, updated {state.updated}, skipped {state.skippedCancelled}{' '}
+            cancelled (no pay).
+          </SuccessBanner>
           {state.needsReview.length > 0 && (
-            <div>
-              <strong>Needs driver review ({state.needsReview.length}):</strong>
-              <ul>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              <p className="mb-1.5 font-medium">Needs driver review ({state.needsReview.length})</p>
+              <ul className="space-y-0.5">
                 {state.needsReview.map((r) => (
                   <li key={r.externalLoadId}>
                     {r.externalLoadId} — {r.driverName}
@@ -39,9 +53,9 @@ export function LoadsImportForm() {
             </div>
           )}
           {state.failed.length > 0 && (
-            <div>
-              <strong>Failed rows ({state.failed.length}):</strong>
-              <ul>
+            <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+              <p className="mb-1.5 font-medium">Failed rows ({state.failed.length})</p>
+              <ul className="space-y-0.5">
                 {state.failed.map((f) => (
                   <li key={f.row}>
                     Row {f.row}: {f.reason}
@@ -52,6 +66,6 @@ export function LoadsImportForm() {
           )}
         </div>
       )}
-    </section>
+    </Card>
   )
 }
