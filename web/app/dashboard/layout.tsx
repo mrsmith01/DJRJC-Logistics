@@ -6,7 +6,7 @@ import { Button } from '@/components/ui'
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/dashboard/loads', label: 'Loads' },
-  { href: '/dashboard/drivers', label: 'Drivers & Trucks' },
+  { href: '/dashboard/admin', label: 'Admin' },
 ]
 
 export default async function DashboardLayout({

@@ -32,11 +32,11 @@ export default async function DashboardHomePage() {
               </p>
             </Card>
           </a>
-          <a href="/dashboard/drivers">
+          <a href="/dashboard/admin">
             <Card className="p-5 transition-shadow hover:shadow-md">
-              <h2 className="font-semibold text-slate-900">Drivers &amp; Trucks</h2>
+              <h2 className="font-semibold text-slate-900">Admin</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Invite drivers and manage your truck fleet.
+                Manage users, access, drivers, and your truck fleet.
               </p>
             </Card>
           </a>
