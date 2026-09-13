@@ -98,7 +98,13 @@ export async function importLoads(
     return { status: 'done', created: 0, updated: 0, skippedCancelled, needsReview, failed }
   }
 
-  const externalIds = toUpsert.map((l) => l.external_load_id)
+  // Dedupe by external_load_id in case the same Load ID appears twice within
+  // one CSV upload — Postgres rejects an upsert that would affect the same
+  // row twice in a single statement. Last occurrence wins, matching the
+  // behavior of re-uploading an entire file.
+  const deduped = [...new Map(toUpsert.map((l) => [l.external_load_id, l])).values()]
+
+  const externalIds = deduped.map((l) => l.external_load_id)
   const { data: existing, error: existingError } = await supabase
     .from('loads')
     .select('external_load_id')
@@ -109,12 +115,12 @@ export async function importLoads(
   }
 
   const existingIds = new Set((existing ?? []).map((l) => l.external_load_id))
-  const created = toUpsert.filter((l) => !existingIds.has(l.external_load_id)).length
-  const updated = toUpsert.length - created
+  const created = deduped.filter((l) => !existingIds.has(l.external_load_id)).length
+  const updated = deduped.length - created
 
   const { error: upsertError } = await supabase
     .from('loads')
-    .upsert(toUpsert, { onConflict: 'external_load_id' })
+    .upsert(deduped, { onConflict: 'external_load_id' })
 
   if (upsertError) {
     return { status: 'error', message: upsertError.message }
