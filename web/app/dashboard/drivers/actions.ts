@@ -1,31 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
-
-async function requireOwner() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    throw new Error('Not authenticated')
-  }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'owner') {
-    throw new Error('Only the owner can perform this action')
-  }
-
-  return { supabase, user }
-}
+import { requireOwner } from '@/lib/supabase/require-owner'
 
 export async function inviteDriver(formData: FormData) {
   await requireOwner()
