@@ -140,7 +140,7 @@ export default async function LoadsPage({
             <tbody className="divide-y divide-slate-100">
               {loads?.map((l) => (
                 <tr key={l.id} className="hover:bg-slate-50">
-                  <td className="py-2.5 pr-4 font-medium text-slate-900">{l.external_load_id}</td>
+                  <td className="py-2.5 pr-4 font-medium text-slate-900">{l.external_load_id ?? '—'}</td>
                   <td className="py-2.5 pr-4">
                     <StatusBadge status={l.status} />
                   </td>

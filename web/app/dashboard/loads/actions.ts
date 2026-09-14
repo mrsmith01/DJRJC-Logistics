@@ -158,16 +158,24 @@ export async function createLoad(formData: FormData) {
   }
   const deliveryFacilityCode = deliveryFacilityCodeRaw.trim()
 
+  // Manual entries via <input type="datetime-local"> submit an offset-less
+  // string (e.g. "2026-09-14T08:00"). We treat that as UTC by appending "Z"
+  // before parsing, so the stored instant is deterministic regardless of the
+  // server's runtime timezone. This differs from the CSV-import path
+  // (csv-mapping.ts's parseRelayDatetime), which reconstructs each row's real
+  // UTC offset from the CSV data — a documented limitation, not a bug, until
+  // there's a reason to ask the owner for their timezone.
   const pickupDatetimeRaw = formData.get('pickup_datetime')
   const pickupDatetime =
     typeof pickupDatetimeRaw === 'string' && pickupDatetimeRaw
-      ? new Date(pickupDatetimeRaw).toISOString()
+      ? new Date(`${pickupDatetimeRaw}:00Z`).toISOString()
       : null
 
+  // See comment above pickupDatetime: manual entries are interpreted as UTC.
   const deliveryDatetimeRaw = formData.get('delivery_datetime')
   const deliveryDatetime =
     typeof deliveryDatetimeRaw === 'string' && deliveryDatetimeRaw
-      ? new Date(deliveryDatetimeRaw).toISOString()
+      ? new Date(`${deliveryDatetimeRaw}:00Z`).toISOString()
       : null
 
   const distanceRaw = formData.get('distance_miles')
@@ -212,6 +220,8 @@ export async function createLoad(formData: FormData) {
   if (error) {
     throw new Error(error.message)
   }
+
+  revalidatePath('/dashboard/loads')
 
   redirect('/dashboard/loads')
 }

@@ -13,7 +13,7 @@ export default async function DashboardHomePage() {
 
   const isOwner = profile?.role === 'owner'
 
-  const { data: myLoads } =
+  const { data: myLoads, error: myLoadsError } =
     user && !isOwner
       ? await supabase
           .from('loads')
@@ -22,7 +22,7 @@ export default async function DashboardHomePage() {
           )
           .eq('driver_id', user.id)
           .order('pickup_datetime', { ascending: false, nullsFirst: false })
-      : { data: null }
+      : { data: null, error: null }
 
   return (
     <div>
@@ -57,6 +57,11 @@ export default async function DashboardHomePage() {
       {!isOwner && (
         <div className="mt-6">
           <Card className="p-5">
+            {myLoadsError && (
+              <p className="mb-4 text-sm text-rose-600">
+                Could not load your loads: {myLoadsError.message}
+              </p>
+            )}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
@@ -100,7 +105,7 @@ export default async function DashboardHomePage() {
                   ))}
                 </tbody>
               </table>
-              {myLoads?.length === 0 && (
+              {!myLoadsError && myLoads?.length === 0 && (
                 <p className="py-8 text-center text-sm text-slate-500">No loads assigned yet.</p>
               )}
             </div>
