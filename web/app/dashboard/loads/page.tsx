@@ -70,7 +70,15 @@ export default async function LoadsPage({
 
   return (
     <div>
-      <PageHeader title="Loads" description="Import Amazon Relay trip history and track dispatch." />
+      <PageHeader
+        title="Loads"
+        description="Import Amazon Relay trip history and track dispatch."
+        action={
+          <a href="/dashboard/loads/new">
+            <Button type="button">Add a Load</Button>
+          </a>
+        }
+      />
 
       <div className="mb-6">
         <LoadsImportForm />

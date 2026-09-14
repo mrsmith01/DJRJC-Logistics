@@ -2,6 +2,7 @@
 
 import { parse } from 'csv-parse/sync'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { requireOwner } from '@/lib/supabase/require-owner'
 import { REQUIRED_COLUMNS, mapRelayRow, type MappedLoad } from './csv-mapping'
 
@@ -129,4 +130,85 @@ export async function importLoads(
   revalidatePath('/dashboard/loads')
 
   return { status: 'done', created, updated, skippedCancelled, needsReview, failed }
+}
+
+export async function createLoad(formData: FormData) {
+  const { supabase } = await requireOwner()
+
+  const externalLoadIdRaw = formData.get('external_load_id')
+  const externalLoadId =
+    typeof externalLoadIdRaw === 'string' && externalLoadIdRaw.trim()
+      ? externalLoadIdRaw.trim()
+      : null
+
+  const status = formData.get('status')
+  if (status !== 'booked' && status !== 'in_transit' && status !== 'delivered' && status !== 'cancelled') {
+    throw new Error('Invalid status')
+  }
+
+  const pickupFacilityCodeRaw = formData.get('pickup_facility_code')
+  if (typeof pickupFacilityCodeRaw !== 'string' || !pickupFacilityCodeRaw.trim()) {
+    throw new Error('Pickup facility is required')
+  }
+  const pickupFacilityCode = pickupFacilityCodeRaw.trim()
+
+  const deliveryFacilityCodeRaw = formData.get('delivery_facility_code')
+  if (typeof deliveryFacilityCodeRaw !== 'string' || !deliveryFacilityCodeRaw.trim()) {
+    throw new Error('Delivery facility is required')
+  }
+  const deliveryFacilityCode = deliveryFacilityCodeRaw.trim()
+
+  const pickupDatetimeRaw = formData.get('pickup_datetime')
+  const pickupDatetime =
+    typeof pickupDatetimeRaw === 'string' && pickupDatetimeRaw
+      ? new Date(pickupDatetimeRaw).toISOString()
+      : null
+
+  const deliveryDatetimeRaw = formData.get('delivery_datetime')
+  const deliveryDatetime =
+    typeof deliveryDatetimeRaw === 'string' && deliveryDatetimeRaw
+      ? new Date(deliveryDatetimeRaw).toISOString()
+      : null
+
+  const distanceRaw = formData.get('distance_miles')
+  const distanceMiles = typeof distanceRaw === 'string' && distanceRaw ? Number(distanceRaw) : null
+
+  const rateRaw = formData.get('rate_total')
+  const rateTotal = typeof rateRaw === 'string' && rateRaw ? Number(rateRaw) : null
+
+  const ratePerMile =
+    rateTotal && distanceMiles && distanceMiles > 0 ? rateTotal / distanceMiles : null
+
+  const driverIdRaw = formData.get('driver_id')
+  const driverId = typeof driverIdRaw === 'string' && driverIdRaw ? driverIdRaw : null
+
+  let assignedDriverName: string | null = null
+  if (driverId) {
+    const { data: driverProfile } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('id', driverId)
+      .single()
+    assignedDriverName = driverProfile?.name ?? null
+  }
+
+  const { error } = await supabase.from('loads').insert({
+    external_load_id: externalLoadId,
+    status,
+    pickup_facility_code: pickupFacilityCode,
+    pickup_datetime: pickupDatetime,
+    delivery_facility_code: deliveryFacilityCode,
+    delivery_datetime: deliveryDatetime,
+    distance_miles: distanceMiles,
+    rate_total: rateTotal,
+    rate_per_mile: ratePerMile,
+    driver_id: driverId,
+    assigned_driver_name: assignedDriverName,
+  })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  redirect('/dashboard/loads')
 }
