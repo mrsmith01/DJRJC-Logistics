@@ -122,7 +122,7 @@ export async function setUserActive(formData: FormData) {
 }
 
 export async function deleteUser(formData: FormData) {
-  const { user: currentUser } = await requireOwner()
+  const { supabase, user: currentUser } = await requireOwner()
 
   const userId = requireNonEmptyString(formData.get('user_id'), 'User')
 
@@ -130,15 +130,25 @@ export async function deleteUser(formData: FormData) {
     throw new Error('You cannot remove your own account')
   }
 
+  // Supabase's Admin API wraps the underlying Postgres error into a generic
+  // "Database error deleting user" — it doesn't pass through the FK
+  // violation text, so we can't detect this by inspecting the error after
+  // the fact. Check for blocking records ourselves first instead.
+  const { count: expenseCount } = await supabase
+    .from('expenses')
+    .select('id', { count: 'exact', head: true })
+    .eq('driver_id', userId)
+
+  if (expenseCount && expenseCount > 0) {
+    throw new Error(
+      'Cannot remove this user: they have expenses on record. Deactivate them instead to preserve history.'
+    )
+  }
+
   const serviceClient = createServiceClient()
   const { error } = await serviceClient.auth.admin.deleteUser(userId)
 
   if (error) {
-    if (error.message.toLowerCase().includes('foreign key')) {
-      throw new Error(
-        'Cannot remove this user: they have loads or expenses on record. Deactivate them instead to preserve history.'
-      )
-    }
     throw new Error(error.message)
   }
 
