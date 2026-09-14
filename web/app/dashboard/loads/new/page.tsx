@@ -14,21 +14,25 @@ export default async function NewLoadPage() {
     redirect('/login')
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'owner') {
+  if (profileError || profile?.role !== 'owner') {
     redirect('/dashboard')
   }
 
-  const { data: drivers } = await supabase
+  const { data: drivers, error: driversError } = await supabase
     .from('profiles')
     .select('id, name')
     .eq('role', 'driver')
     .order('name')
+
+  if (driversError) {
+    console.error('Failed to load drivers:', driversError.message)
+  }
 
   return (
     <div>

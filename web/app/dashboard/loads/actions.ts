@@ -184,11 +184,14 @@ export async function createLoad(formData: FormData) {
 
   let assignedDriverName: string | null = null
   if (driverId) {
-    const { data: driverProfile } = await supabase
+    const { data: driverProfile, error: driverError } = await supabase
       .from('profiles')
       .select('name')
       .eq('id', driverId)
       .single()
+    if (driverError) {
+      throw new Error('Could not look up driver')
+    }
     assignedDriverName = driverProfile?.name ?? null
   }
 
